@@ -23,6 +23,14 @@ figure
 H.showResults
 ```
 
+## Example images
+The example image directory contains images processed via the Mertz lab ImageJ plugin. 
+This allows the output of this code to be validated. 
+As indicated in the above example, the HiLo algorithm produces near identical results if run with two copies of the uniform image. 
+In other words, the speckle image seems to provide little information in many cases. 
+This can be demonstrated using the "Zeiss" images in the example directory. 
+Provided is one raw image and one processed structured illumination image using three gratings in "apotome" mode. 
+Running the HiLo algorithm on two copies of the original image produces results much like the apotome. 
 
 ###
 References
