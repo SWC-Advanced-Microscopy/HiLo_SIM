@@ -2,6 +2,9 @@
 
 This is a very basic MATLAB implementation of the HiLo algorithm for structured illumination. 
 
+<img src="https://github.com/raacampbell/HiLo_SIM/blob/master/example_images/before-after-zeiss.jpg" />
+
+
 ## Usage
 ```
 H=hilospeckle(ImageUniform, ImageSpeckle); %Run and show result image
