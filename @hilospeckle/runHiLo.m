@@ -144,9 +144,15 @@ function runHiLo(obj)
 
             obj.impLo = obj.impLo .* obj.eta;
             obj.HiloFinal(:,:,ii) = obj.impLo + obj.impHi;
-            
+
         end %for ii = 1:size(obj.uniformIm,3)
         obj.HiloFinal(obj.HiloFinal<0)=0;
         obj.HiloFinal = uint16(obj.HiloFinal/max(obj.HiloFinal(:))*2^16);
-        fprintf('\nCompleted in %0.1f s\n', toc)
+        T=toc;
+        if T<2
+            fprintf('\nCompleted in %0.3f s\n', T)
+        else
+            fprintf('\nCompleted in %0.1f s\n', T)
+        end
+
 end % hilo

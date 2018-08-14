@@ -46,6 +46,7 @@ classdef hilospeckle < handle
     end
 
     properties (Hidden)
+        doVectorisedCamOTF=true
         verbose = false
         padded %boolean - true if images were padded
         impLo %The "Lo" image
@@ -63,6 +64,13 @@ classdef hilospeckle < handle
             if ~isequal(size(uniformIm), size(speckleIm))
                 fprintf('uniformIm and speckleIm must be the same size. Not running.\n')
                 return
+            end
+
+            try 
+                gpuDevice
+            catch
+                obj.doGPU=false;
+                fprintf('Disabling GPU acceleration: no device found\n')
             end
 
             obj.uniformIm = uniformIm;
@@ -183,24 +191,45 @@ classdef hilospeckle < handle
 
 
 
-        function pixel = createCameraOTF(~, imWidth, imHeight)
+        function pixel = createCameraOTF(obj, imWidth, imHeight)
             % Tested and produces something that looks plausible
-            pixel = ones(imHeight, imWidth);
 
+
+            X = (2 * (1:imWidth) - imWidth) * pi / imWidth;
+            Y = (2 * (1:imHeight) - imHeight) * pi / imHeight;
+
+            if obj.doVectorisedCamOTF %Faster but doesn't yield exactly the same answer as the loop
+                [xx,yy] = meshgrid(X,Y);
+     
+                pixel=sin(xx) .* sin(yy) ./ (xx .* yy);
+
+                f=(xx == 0 & yy ~= 0);
+                t = sin(yy(f))./yy(f);
+                pixel(f)=t;
+
+                f=(xx ~= 0 & yy == 0);
+                t = sin(xx(f))./xx(f);
+                pixel(f)=t;
+
+                f=(xx == 0 & yy == 0);
+                pixel(f)=1;
+
+                pixel(pixel<0) = 0;
+                return
+            end
+
+            pixel = ones(imHeight, imWidth,'single');
             for x = 1:imWidth
                 for y = 1:imHeight
 
-                    x1 = (2 * x - imWidth) * pi / imWidth;
-                    y1 = (2 * y - imHeight) * pi / imHeight;
+                    if X(x) ~= 0 && Y(y) ~= 0
+                        pixel(y,x) = sin(X(x)) * sin(Y(y)) / (X(x) * Y(y));
 
-                    if x1 ~= 0 && y1 ~= 0
-                        pixel(y,x) = sin(x1) * sin(y1) / x1 / y1;
+                    elseif X(x) == 0 && Y(y) ~= 0
+                        pixel(y,x) = sin(Y(y)) / Y(y);
 
-                    elseif x1 == 0 && y1 ~= 0
-                        pixel(y,x) = sin(y1) / y1;
-
-                    elseif x1 ~= 0 && y1 == 0
-                        pixel(y,x) = sin(x1) / x1;
+                    elseif X(x) ~= 0 && Y(y) == 0
+                        pixel(y,x) = sin(X(x)) / X(x);
                     %otherwise it's a one
                     end
 
@@ -213,7 +242,7 @@ classdef hilospeckle < handle
 
 
         function pixel = createImagingOTF(obj, numericalAperture, wavelengthInNM, sizeX,  sizeY)
-            % Tested but tends to yield zero arrays
+            % Tested and seem to yield something meaningful
             BandWidth = 2 * numericalAperture / (wavelengthInNM * 1E-9);
             scaleUnits = obj.magnification / (obj.pixelSize * 1E-6) / BandWidth;
 
