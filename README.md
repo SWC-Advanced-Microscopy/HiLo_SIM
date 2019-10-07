@@ -1,8 +1,13 @@
 # HiLo Structured Illumination Microscopy
 
-This is a very basic MATLAB implementation of the HiLo algorithm for structured illumination. 
+This is a very basic MATLAB implementation of the HiLo algorithm (see References, below) for structured illumination. 
 
 <img src="https://github.com/raacampbell/HiLo_SIM/blob/master/example_images/before-after-zeiss.jpg" />
+
+# NOTE
+After some testing, it seems the speckle algorithm is in effect just bandpass-filtering the image. 
+i.e. The algorithm performs equally well if the speckle image is swapped with a copy of the clean ("non-speckle") image. 
+This has been tested with a few different image series and the result is always the same. 
 
 
 ## Usage
